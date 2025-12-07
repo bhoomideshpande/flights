@@ -18,26 +18,26 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./capstone/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - web
     restart: unless-stopped
 
-  # Grafana - commented out due to Docker registry CDN issues
-  # To enable: manually pull the image using alternative methods, then uncomment
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - GF_SECURITY_ADMIN_USER=admin
-  #     - GF_SECURITY_ADMIN_PASSWORD=admin
-  #   volumes:
-  #     - grafana-storage:/var/lib/grafana
-  #   depends_on:
-  #     - prometheus
-  #   restart: unless-stopped
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # optional: allow anonymous view (not recommended for prod)
+      #- GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest

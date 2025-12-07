@@ -25,7 +25,7 @@ from flight.metrics import metrics_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include("flight.urls")),
-    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico')))
     path("metrics", metrics_view),   # Prometheus scrapes this
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
