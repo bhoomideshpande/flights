@@ -1,0 +1,5 @@
+# Step 4: To run the playbook, use the following command in your terminal:
+#
+# ansible-playbook -i hosts.ini deploy.yml
+#
+# Make sure you have Ansible installed and SSH access to your target server.

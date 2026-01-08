@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Service GUI</title>
+</head>
+<body>
+    <h1>User Service</h1>
+    <h2>Register</h2>
+    <form onsubmit="registerUser(event)">
+        <input type="text" id="reg_username" placeholder="Username" required><br>
+        <input type="password" id="reg_password" placeholder="Password" required><br>
+        <button type="submit">Register</button>
+    </form>
+    <div id="reg_result"></div>
+    <h2>Login</h2>
+    <form onsubmit="loginUser(event)">
+        <input type="text" id="login_username" placeholder="Username" required><br>
+        <input type="password" id="login_password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <div id="login_result"></div>
+    <script>
+        function registerUser(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8001/api/register/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('reg_username').value,
+                    password: document.getElementById('reg_password').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('reg_result').innerText = JSON.stringify(data);
+            });
+        }
+        function loginUser(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8001/api/login/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('login_username').value,
+                    password: document.getElementById('login_password').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('login_result').innerText = JSON.stringify(data);
+            });
+        }
+    </script>
+</body>
+</html>

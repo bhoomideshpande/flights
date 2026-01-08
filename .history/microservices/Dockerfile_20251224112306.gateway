@@ -1,0 +1,22 @@
+# API Gateway Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install djangorestframework django-cors-headers requests
+
+# Copy project files
+COPY . .
+
+# Set environment variables
+ENV DJANGO_SETTINGS_MODULE=microservices.api_gateway.settings
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 8000
+
+# Run the service
+CMD ["python", "-m", "django", "runserver", "0.0.0.0:8000", "--settings=microservices.api_gateway.settings", "--noreload"]

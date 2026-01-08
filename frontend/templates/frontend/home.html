@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microservices Frontend</title>
+</head>
+<body>
+    <h1>Welcome to Flight Microservices Frontend</h1>
+    <ul>
+        <li><a href="#" onclick="showRegister()">Register (User Service)</a></li>
+        <li><a href="#" onclick="showLogin()">Login (User Service)</a></li>
+        <li><a href="#" onclick="showSearchFlights()">Search Flights (Flight Service)</a></li>
+        <li><a href="#" onclick="showBookTicket()">Book Ticket (Booking Service)</a></li>
+    </ul>
+    <div id="content"></div>
+    <script>
+        function showRegister() {
+            document.getElementById('content').innerHTML = `
+                <h2>Register</h2>
+                <form onsubmit="registerUser(event)">
+                    <input type="text" id="reg_username" placeholder="Username" required><br>
+                    <input type="password" id="reg_password" placeholder="Password" required><br>
+                    <button type="submit">Register</button>
+                </form>
+                <div id="reg_result"></div>
+            `;
+        }
+        function registerUser(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8001/api/register/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('reg_username').value,
+                    password: document.getElementById('reg_password').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('reg_result').innerText = JSON.stringify(data);
+            });
+        }
+        function showLogin() {
+            document.getElementById('content').innerHTML = `
+                <h2>Login</h2>
+                <form onsubmit="loginUser(event)">
+                    <input type="text" id="login_username" placeholder="Username" required><br>
+                    <input type="password" id="login_password" placeholder="Password" required><br>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="login_result"></div>
+            `;
+        }
+        function loginUser(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8001/api/login/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: document.getElementById('login_username').value,
+                    password: document.getElementById('login_password').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('login_result').innerText = JSON.stringify(data);
+            });
+        }
+        function showSearchFlights() {
+            document.getElementById('content').innerHTML = `
+                <h2>Search Flights</h2>
+                <form onsubmit="searchFlights(event)">
+                    <input type="text" id="origin" placeholder="Origin" required><br>
+                    <input type="text" id="destination" placeholder="Destination" required><br>
+                    <button type="submit">Search</button>
+                </form>
+                <div id="flights_result"></div>
+            `;
+        }
+        function searchFlights(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8002/api/flights/?origin=' + document.getElementById('origin').value + '&destination=' + document.getElementById('destination').value)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('flights_result').innerText = JSON.stringify(data);
+            });
+        }
+        function showBookTicket() {
+            document.getElementById('content').innerHTML = `
+                <h2>Book Ticket</h2>
+                <form onsubmit="bookTicket(event)">
+                    <input type="text" id="user_id" placeholder="User ID" required><br>
+                    <input type="text" id="flight_id" placeholder="Flight ID" required><br>
+                    <button type="submit">Book</button>
+                </form>
+                <div id="book_result"></div>
+            `;
+        }
+        function bookTicket(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8003/api/book/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user_id: document.getElementById('user_id').value,
+                    flight_id: document.getElementById('flight_id').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('book_result').innerText = JSON.stringify(data);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# User Service Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install djangorestframework django-cors-headers requests
+
+# Copy project files
+COPY . .
+
+# Set environment variables
+ENV DJANGO_SETTINGS_MODULE=microservices.user_service.settings
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 8001
+
+# Run the service
+CMD ["python", "-m", "django", "runserver", "0.0.0.0:8001", "--settings=microservices.user_service.settings", "--noreload"]

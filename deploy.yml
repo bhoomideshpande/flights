@@ -1,0 +1,42 @@
+---
+- name: Deploy Flight Ticket Booking Application
+  hosts: webservers
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+        update_cache: yes
+
+    - name: Clone the repository
+      git:
+        repo: 'https://github.com/Rakshitak21/Flight-Ticket-Booking.git'
+        dest: /opt/Flight-Ticket-Booking
+        version: main
+
+    - name: Install Python dependencies
+      pip:
+        requirements: /opt/Flight-Ticket-Booking/requirements.txt
+        virtualenv: /opt/Flight-Ticket-Booking/venv
+
+    - name: Run Django migrations
+      command: /opt/Flight-Ticket-Booking/venv/bin/python manage.py migrate
+      args:
+        chdir: /opt/Flight-Ticket-Booking
+
+    - name: Collect static files
+      command: /opt/Flight-Ticket-Booking/venv/bin/python manage.py collectstatic --noinput
+      args:
+        chdir: /opt/Flight-Ticket-Booking
+
+    - name: Start Django server
+      command: /opt/Flight-Ticket-Booking/venv/bin/python manage.py runserver 0.0.0.0:8000
+      args:
+        chdir: /opt/Flight-Ticket-Booking
+      async: 0
+      poll: 0

@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Shared Database Volume (SQLite)
+  # All services connect to the same database file
+
+  user-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile.user
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../db.sqlite3:/app/db.sqlite3
+      - ../flight:/app/flight
+    environment:
+      - DJANGO_SETTINGS_MODULE=microservices.user_service.settings
+    networks:
+      - flight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  flight-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile.flight
+    ports:
+      - "8002:8002"
+    volumes:
+      - ../db.sqlite3:/app/db.sqlite3
+      - ../flight:/app/flight
+      - ../Data:/app/Data
+    environment:
+      - DJANGO_SETTINGS_MODULE=microservices.flight_service.settings
+    networks:
+      - flight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  booking-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile.booking
+    ports:
+      - "8003:8003"
+    volumes:
+      - ../db.sqlite3:/app/db.sqlite3
+      - ../flight:/app/flight
+    environment:
+      - DJANGO_SETTINGS_MODULE=microservices.booking_service.settings
+    networks:
+      - flight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile.gateway
+    ports:
+      - "9000:8000"
+    volumes:
+      - ../db.sqlite3:/app/db.sqlite3
+      - ../flight:/app/flight
+    environment:
+      - DJANGO_SETTINGS_MODULE=microservices.api_gateway.settings
+      - USER_SERVICE_URL=http://user-service:8001
+      - FLIGHT_SERVICE_URL=http://flight-service:8002
+      - BOOKING_SERVICE_URL=http://booking-service:8003
+    depends_on:
+      - user-service
+      - flight-service
+      - booking-service
+    networks:
+      - flight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  flight-network:
+    driver: bridge

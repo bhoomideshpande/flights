@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Service GUI</title>
+</head>
+<body>
+    <h1>Booking Service</h1>
+    <h2>Book Ticket</h2>
+    <form onsubmit="bookTicket(event)">
+        <input type="text" id="user_id" placeholder="User ID" required><br>
+        <input type="text" id="flight_id" placeholder="Flight ID" required><br>
+        <button type="submit">Book</button>
+    </form>
+    <div id="book_result"></div>
+    <script>
+        function bookTicket(e) {
+            e.preventDefault();
+            fetch('http://127.0.0.1:8003/api/book/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    user_id: document.getElementById('user_id').value,
+                    flight_id: document.getElementById('flight_id').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('book_result').innerText = JSON.stringify(data);
+            });
+        }
+    </script>
+</body>
+</html>
