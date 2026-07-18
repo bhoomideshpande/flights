@@ -1,0 +1,110 @@
+---
+- name: Deploy Flight Ticket Booking Application
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    repo_url: "https://github.com/bhoomideshpande/Flight-Ticket-Booking.git"
+    repo_dir: "/opt/flight-ticket-booking"
+    app_port: 8000
+    
+  tasks:
+    - name: Update system packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      ignore_errors: yes
+
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - curl
+        - python3-pip
+      when: ansible_os_family == "Debian"
+      ignore_errors: yes
+
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Install Docker Compose
+      shell: |
+        curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+      args:
+        creates: /usr/local/bin/docker-compose
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ repo_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dir }}"
+        version: main
+        update: yes
+        force: yes
+
+    - name: Build Docker images
+      shell: "docker-compose build"
+      args:
+        chdir: "{{ repo_dir }}"
+      register: build_result
+      changed_when: "'Successfully built' in build_result.stdout"
+
+    - name: Start all services with docker-compose
+      shell: "docker-compose up -d"
+      args:
+        chdir: "{{ repo_dir }}"
+      register: compose_result
+      changed_when: "'Started' in compose_result.stderr or 'Created' in compose_result.stderr"
+
+    - name: Wait for Django application to be ready
+      uri:
+        url: "http://localhost:{{ app_port }}"
+        status_code: 200, 301, 302
+      register: django_check
+      until: django_check.status != -1
+      retries: 10
+      delay: 5
+
+    - name: Display deployment status
+      debug:
+        msg:
+          - "Flight Ticket Booking Application deployed successfully!"
+          - "Access the application at: http://{{ ansible_host }}"
+          - "Prometheus metrics: http://{{ ansible_host }}:9090"
+          - "Grafana dashboard: http://{{ ansible_host }}:3000"
+
+    - name: Show docker-compose logs (last 20 lines)
+      shell: "docker-compose logs --tail=20"
+      args:
+        chdir: "{{ repo_dir }}"
+      register: docker_logs
+      changed_when: false
+
+    - name: Display Docker logs
+      debug:
+        msg: "{{ docker_logs.stdout_lines }}"

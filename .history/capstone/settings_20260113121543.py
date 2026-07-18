@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'flight.middleware.PrometheusMiddleware',
 ]
 
 ROOT_URLCONF = 'capstone.urls'
@@ -132,5 +133,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # WhiteNoise settings for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'flight.User'
